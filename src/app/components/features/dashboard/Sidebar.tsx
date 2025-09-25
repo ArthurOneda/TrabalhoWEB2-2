@@ -1,6 +1,7 @@
 'use client';
+import { useLogin } from '@/lib/firebase/hooks';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 
 const navItems = [
   { name: 'Dashboard', href: '/main/dashboard', icon: '📊' },
@@ -9,6 +10,14 @@ const navItems = [
 
 export function Sidebar() {
   const pathname = usePathname();
+
+  const { logout } = useLogin();
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    await logout();
+    router.push('/auth/login');
+  };
 
   return (
     <div className="w-64 bg-white shadow-xl flex flex-col">
@@ -35,10 +44,13 @@ export function Sidebar() {
         </ul>
       </nav>
       <div className="p-4 border-t">
-        <button className="w-full text-left text-red-600 hover:text-red-800 font-medium flex items-center gap-2">
-          <span>🚪</span> Sair
-        </button>
-      </div>
+      <button
+        onClick={handleLogout}
+        className="w-full text-left text-red-600 hover:text-red-800 font-medium flex items-center gap-2"
+      >
+        <span>🚪</span> Sair
+      </button>
+    </div>
     </div>
   );
 }
