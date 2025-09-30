@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { toast } from 'react-hot-toast';
+import { Transaction } from '@/types'; // ✅ Importe a interface
 import { TransactionForm } from '@/app/components/features/transactions/TransactionForm';
 import { useTransactions } from '@/lib/firebase/transaction';
 
@@ -10,7 +11,7 @@ export default function EditTransactionPage() {
     const router = useRouter();
     const params = useParams();
     const id = params.id as string;
-    const [transaction, setTransaction] = useState<any>(null);
+    const [transaction, setTransaction] = useState<Transaction | null>(null);
     const [loading, setLoading] = useState(true);
     const { getTransactionById } = useTransactions();
 
