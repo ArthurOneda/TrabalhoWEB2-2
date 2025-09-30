@@ -5,6 +5,9 @@ import {
     signInWithEmailAndPassword,
     signInWithPopup,
     signOut,
+    sendPasswordResetEmail as firebaseSendPasswordResetEmail,
+    confirmPasswordReset as firebaseConfirmPasswordReset,
+    verifyPasswordResetCode,
 } from 'firebase/auth';
 import { auth, googleProvider, githubProvider } from './index';
 import { toast } from 'react-hot-toast';
@@ -16,7 +19,7 @@ const validateCPF = async (cpf: string): Promise<boolean> => {
         const data = await response.json();
         return data.valido === true;
     } catch (error) {
-        console.error('Erro na validação do CPF. Continuando sem verificação externa.');
+        console.error(error);
         return cleanCPF.length === 11 && /^\d+$/.test(cleanCPF);
     }
 };
@@ -28,7 +31,15 @@ function isAuthError(error: unknown): error is AuthError {
 export const useLogin = () => {
     const loginWithEmail = async (email: string, password: string) => {
         try {
-            await signInWithEmailAndPassword(auth, email, password);
+            const userCredential = await signInWithEmailAndPassword(auth, email, password);
+            const user = userCredential.user;
+
+            if (!user.emailVerified) {
+                await signOut(auth);
+                toast.error('Por favor, verifique seu e-mail antes de fazer login.');
+                throw new Error('email-not-verified');
+            }
+
             toast.success('Login realizado com sucesso!');
         } catch (error) {
             if (isAuthError(error)) {
@@ -50,9 +61,9 @@ export const useLogin = () => {
                         message = 'Erro ao fazer login. Tente novamente.';
                 }
                 toast.error(message);
-            } else {
+            } else if ((error as Error).message !== 'email-not-verified') {
                 toast.error('Erro inesperado. Tente novamente.');
-                console.error('Erro desconhecido:', error);
+                console.error('Erro desconhecido no login:', error);
             }
             throw error;
         }
@@ -106,7 +117,7 @@ export const useLogin = () => {
             const isCPFValid = await validateCPF(cpf);
             if (!isCPFValid) {
                 toast.error('CPF inválido ou não existe.');
-                throw new Error('CPF inválido');
+                return null;
             }
 
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
@@ -137,6 +148,68 @@ export const useLogin = () => {
         }
     };
 
+    const sendPasswordResetEmail = async (email: string) => {
+        try {
+            await firebaseSendPasswordResetEmail(auth, email);
+            toast.success('E-mail de redefinição enviado! Verifique sua caixa de entrada.');
+        } catch (error) {
+            if (isAuthError(error)) {
+                let message = 'Erro ao enviar e-mail.';
+                if (error.code === 'auth/user-not-found') {
+                    message = 'Nenhum usuário encontrado com este e-mail.';
+                } else if (error.code === 'auth/invalid-email') {
+                    message = 'E-mail inválido.';
+                }
+                toast.error(message);
+            } else {
+                toast.error('Erro inesperado. Tente novamente.');
+                console.error('Erro ao enviar e-mail de redefinição:', error);
+            }
+            throw error;
+        }
+    };
+
+    const checkPasswordResetCode = async (oobCode: string) => {
+        try {
+            const email = await verifyPasswordResetCode(auth, oobCode);
+            return email;
+        } catch (error) {
+            if (isAuthError(error)) {
+                if (error.code === 'auth/expired-action-code') {
+                    toast.error('Link expirado. Solicite um novo e-mail.');
+                } else if (error.code === 'auth/invalid-action-code') {
+                    toast.error('Link inválido.');
+                }
+            } else {
+                toast.error('Erro ao verificar link.');
+            }
+            throw error;
+        }
+    };
+
+    const confirmPasswordReset = async (oobCode: string, newPassword: string) => {
+        try {
+            await firebaseConfirmPasswordReset(auth, oobCode, newPassword);
+            toast.success('Senha redefinida com sucesso! Faça login com sua nova senha.');
+        } catch (error) {
+            if (isAuthError(error)) {
+                let message = 'Erro ao redefinir senha.';
+                if (error.code === 'auth/expired-action-code') {
+                    message = 'Link expirado. Solicite um novo e-mail.';
+                } else if (error.code === 'auth/invalid-action-code') {
+                    message = 'Link inválido.';
+                } else if (error.code === 'auth/weak-password') {
+                    message = 'Senha fraca. Use pelo menos 6 caracteres.';
+                }
+                toast.error(message);
+            } else {
+                toast.error('Erro inesperado. Tente novamente.');
+                console.error('Erro ao redefinir senha:', error);
+            }
+            throw error;
+        }
+    };
+
     const logout = async () => {
         try {
             await signOut(auth);
@@ -151,5 +224,8 @@ export const useLogin = () => {
         }
     };
 
-    return { loginWithEmail, loginWithGoogle, loginWithGithub, signup, logout };
+    return {
+        loginWithEmail, loginWithGoogle, loginWithGithub, signup, sendPasswordResetEmail,
+        checkPasswordResetCode, confirmPasswordReset, logout
+    };
 };
