@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { toast } from 'react-hot-toast';
-import { Transaction } from '@/types'; // ✅ Importe a interface
+import { Transaction } from '@/types';
 import { TransactionForm } from '@/app/components/features/transactions/TransactionForm';
 import { useTransactions } from '@/lib/firebase/transaction';
 

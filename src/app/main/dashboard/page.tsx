@@ -1,11 +1,12 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useTransactions, Transaction } from '@/lib/firebase/transaction';
+import { useTransactions} from '@/lib/firebase/transaction';
 import { toast } from 'react-hot-toast';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { format, isWithinInterval, addDays, startOfDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { Transaction } from '@/types';
 
 const EXPENSE_CATEGORIES = ['Moradia', 'Alimentação', 'Transporte', 'Lazer', 'Saúde', 'Educação', 'Outros'];
 const COLORS = ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40', '#8AC926'];

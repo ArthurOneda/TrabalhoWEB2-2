@@ -1,19 +1,10 @@
 import { collection, addDoc, getDocs, query, where, deleteDoc, doc, updateDoc, getDoc } from 'firebase/firestore';
 import { db } from './index';
 import { auth } from './index';
+import { Transaction } from '@/types';
 
 export type TransactionType = 'income' | 'expense';
 export type ExpenseStatus = 'paid' | 'pending';
-
-export interface Transaction {
-    id?: string;
-    type: TransactionType;
-    description: string;
-    value: number;
-    date: Date;
-    category: string;
-    status?: ExpenseStatus;
-}
 
 export const useTransactions = () => {
     const getCurrentUserId = () => {

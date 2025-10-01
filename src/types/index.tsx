@@ -2,7 +2,7 @@ export type TransactionType = 'income' | 'expense';
 export type ExpenseStatus = 'paid' | 'pending';
 
 export interface Transaction {
-  id: string; // ✅ Agora é obrigatório
+  id: string;
   type: TransactionType;
   description: string;
   value: number;
