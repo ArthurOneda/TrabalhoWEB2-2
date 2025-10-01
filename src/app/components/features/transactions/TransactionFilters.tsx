@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { expenseCategories, incomeCategories } from '@/lib/validations/transactionSchema';
 
 interface TransactionFiltersProps {
@@ -16,44 +16,31 @@ export function TransactionFilters({ onFilterChange }: TransactionFiltersProps) 
     const [startDate, setStartDate] = useState<string>('');
     const [endDate, setEndDate] = useState<string>('');
 
-    const handleTypeChange = (newType: 'all' | 'income' | 'expense') => {
-        setType(newType);
-        onFilterChange({
-            type: newType === 'all' ? undefined : newType,
-            category: category || undefined,
-            startDate: startDate ? new Date(startDate) : undefined,
-            endDate: endDate ? new Date(endDate) : undefined,
-        });
-    };
-
-    const handleCategoryChange = (newCategory: string) => {
-        setCategory(newCategory);
-        onFilterChange({
-            type: type === 'all' ? undefined : type,
-            category: newCategory || undefined,
-            startDate: startDate ? new Date(startDate) : undefined,
-            endDate: endDate ? new Date(endDate) : undefined,
-        });
-    };
-
-    const handleStartDateChange = (newDate: string) => {
-        setStartDate(newDate);
-        onFilterChange({
-            type: type === 'all' ? undefined : type,
-            category: category || undefined,
-            startDate: newDate ? new Date(newDate) : undefined,
-            endDate: endDate ? new Date(endDate) : undefined,
-        });
-    };
-
-    const handleEndDateChange = (newDate: string) => {
-        setEndDate(newDate);
+    useEffect(() => {
         onFilterChange({
             type: type === 'all' ? undefined : type,
             category: category || undefined,
             startDate: startDate ? new Date(startDate) : undefined,
-            endDate: newDate ? new Date(newDate) : undefined,
+            endDate: endDate ? new Date(endDate) : undefined,
         });
+    }, [type, category, startDate, endDate, onFilterChange]);
+
+    const handleTypeChange = (value: string) => {
+        if (value === 'all' || value === 'income' || value === 'expense') {
+            setType(value);
+        }
+    };
+
+    const handleCategoryChange = (value: string) => {
+        setCategory(value);
+    };
+
+    const handleStartDateChange = (value: string) => {
+        setStartDate(value);
+    };
+
+    const handleEndDateChange = (value: string) => {
+        setEndDate(value);
     };
 
     const categories = type === 'all'
@@ -62,6 +49,13 @@ export function TransactionFilters({ onFilterChange }: TransactionFiltersProps) 
             ? expenseCategories
             : incomeCategories;
 
+    useEffect(() => {
+        const categoriesAsStrings = categories.map(cat => cat as string);
+        if (category && !categoriesAsStrings.includes(category)) {
+            setCategory('');
+        }
+    }, [categories, category]);
+
     return (
         <div className="bg-white p-4 rounded-xl shadow mb-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -69,7 +63,7 @@ export function TransactionFilters({ onFilterChange }: TransactionFiltersProps) 
                     <label className="block text-sm font-medium text-gray-700 mb-2">Tipo</label>
                     <select
                         value={type}
-                        onChange={(e) => handleTypeChange(e.target.value as any)}
+                        onChange={(e) => handleTypeChange(e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg"
                     >
                         <option value="all">Todos</option>
@@ -86,8 +80,8 @@ export function TransactionFilters({ onFilterChange }: TransactionFiltersProps) 
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg"
                     >
                         <option value="">Todas</option>
-                        {categories.map((cat, index) => (
-                            <option key={`${cat}-${index}`} value={cat}>
+                        {categories.map((cat) => (
+                            <option key={cat} value={cat}>
                                 {cat}
                             </option>
                         ))}
