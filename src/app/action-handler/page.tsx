@@ -1,37 +1,29 @@
-'use client';
+import { connection } from 'next/server';
+import { redirect } from 'next/navigation';
 
-import { useEffect } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { toast } from 'react-hot-toast';
+export async function generateStaticParams() {
+  return [];
+}
 
-export default function ActionHandlerPage() {
-    const router = useRouter();
-    const searchParams = useSearchParams();
-    const oobCode = searchParams.get('oobCode');
+export default async function ActionHandlerPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ mode?: string; oobCode?: string }>;
+}) {
+  await connection();
 
-    useEffect(() => {
-        const mode = searchParams.get('mode');
-        const oobCode = searchParams.get('oobCode');
+  const params = await searchParams;
+  const { mode, oobCode } = params;
 
-        if (!mode || !oobCode) {
-            toast.error('Link inválido.');
-            router.push('/auth/login');
-            return;
-        }
+  if (!mode || !oobCode) {
+    return redirect('/auth/login');
+  }
 
-        if (mode === 'verifyEmail') {
-            router.push(`/auth/verify-email?oobCode=${oobCode}`);
-        } else if (mode === 'resetPassword') {
-            router.push(`/auth/reset-password?oobCode=${oobCode}`);
-        } else {
-            toast.error('Ação não suportada.');
-            router.push('/auth/login');
-        }
-    }, [router, searchParams]);
+  if (mode === 'verifyEmail') {
+    return redirect(`/auth/verify-email?oobCode=${encodeURIComponent(oobCode)}`);
+  } else if (mode === 'resetPassword') {
+    return redirect(`/auth/reset-password?oobCode=${encodeURIComponent(oobCode)}`);
+  }
 
-    return (
-        <div className="flex min-h-screen items-center justify-center bg-gray-50">
-            <p className="text-gray-600">Processando...</p>
-        </div>
-    );
+  return redirect('/auth/login');
 }
