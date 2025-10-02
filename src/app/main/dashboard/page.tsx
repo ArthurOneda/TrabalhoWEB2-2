@@ -1,9 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useTransactions} from '@/lib/firebase/transaction';
+import { useTransactions } from '@/lib/firebase/transaction';
 import { toast } from 'react-hot-toast';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import { format, isWithinInterval, addDays, startOfDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Transaction } from '@/types';
@@ -37,15 +37,15 @@ export default function DashboardPage() {
       return acc;
     }, {});
 
-  const totalExpense = Object.values(expenseByCategory).reduce((sum, val) => sum + val, 0);
-
   interface PieChartData {
     name: string;
     value: number;
     percent: number;
+    [key: string]: string | number;
   }
 
-  const pieData = Object.entries(expenseByCategory).map(([name, value]) => ({
+  const totalExpense = Object.values(expenseByCategory).reduce((sum, val) => sum + val, 0);
+  const pieData: PieChartData[] = Object.entries(expenseByCategory).map(([name, value]) => ({
     name,
     value,
     percent: totalExpense > 0 ? value / totalExpense : 0,
@@ -79,7 +79,6 @@ export default function DashboardPage() {
   useEffect(() => {
     const fetchQuotes = async () => {
       try {
-        // ✅ URLs sem espaços
         const dolarRes = await fetch('https://economia.awesomeapi.com.br/json/last/USD-BRL');
         const dolarData = await dolarRes.json();
         setDolar(dolarData.USDBRL.bid);
@@ -143,7 +142,7 @@ export default function DashboardPage() {
                   data={pieData}
                   cx="50%"
                   cy="50%"
-                  labelLine={false}
+                  labelLine={true}
                   outerRadius={80}
                   fill="#8884d8"
                   dataKey="value"
@@ -156,7 +155,12 @@ export default function DashboardPage() {
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
-                <Tooltip formatter={(value) => [`${Number(value).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`, 'Valor']} />
+                <Tooltip
+                  formatter={(value) =>
+                    [`${Number(value).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`, 'Valor']
+                  }
+                />
+                <Legend />
               </PieChart>
             </ResponsiveContainer>
           ) : (

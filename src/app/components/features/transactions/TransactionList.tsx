@@ -1,4 +1,3 @@
-// src/components/features/transactions/TransactionList.tsx
 'use client';
 
 import { useState } from 'react';
