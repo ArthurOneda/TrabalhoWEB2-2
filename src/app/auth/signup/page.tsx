@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useLogin } from '@/lib/firebase/hooks';
 import { toast } from 'react-hot-toast';
 
-// Máscara simples para CPF
+
 const maskCPF = (value: string) => {
   return value
     .replace(/\D/g, '')

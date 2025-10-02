@@ -14,7 +14,7 @@ export default function ResetPasswordPage({
                     <p className="text-gray-600">Informe sua nova senha abaixo.</p>
                 </div>
 
-                {/* ✅ Wrap o componente client-only com Suspense */}
+                
                 <Suspense fallback={<div className="text-center py-4">Carregando...</div>}>
                     <ResetPasswordForm searchParams={searchParams} />
                 </Suspense>

@@ -122,7 +122,7 @@ export default function DashboardPage() {
           </p>
         </div>
 
-        {/* ✅ Classes corrigidas */}
+        {/* Classes corrigidas */}
         <div className={`${balance >= 0 ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'} rounded-xl p-6`}>
           <h3 className={`text-lg font-medium ${balance >= 0 ? 'text-green-800' : 'text-red-800'}`}>Saldo</h3>
           <p className={`text-3xl font-bold ${balance >= 0 ? 'text-green-600' : 'text-red-600'} mt-2`}>
